@@ -1,11 +1,12 @@
-import gazetteer.PopularLandmarks;
+import java.util.ArrayList;
 
-import java.util.List;
+import gazetteer.PopularLandmarks;
+import gazetteer.Tweet;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import tweetparser.ParseATweet;
-import tweetparser.TweetNLP;
+import tweetparser.TweetSearcher;
 import util.QGramDistance;
 
 
@@ -43,7 +44,42 @@ public class Demo {
 		//System.out.println(QGramDistance.distance("Stat of libe", "Statue of Liberty"));
 		
 		ParseATweet parser = new ParseATweet();
-		String fullTweet = "I love the machu picchu cc @twittingsaggu";
+		
+		TweetSearcher searcher = new TweetSearcher();
+    	ArrayList<String> queries = new ArrayList<String>();
+    	
+    	//general queries
+    	queries.add("spring break");
+    	queries.add("vacation");
+    	queries.add("travel");
+    	queries.add("holiday");
+    	queries.add("landmark");
+    	
+    	ArrayList<Tweet> resp1 = searcher.SearchForTweets(queries);
+    	
+    	queries.clear();
+    	//landmark queries
+    	queries.add("loch ness");
+    	queries.add("Trevi Fountain");
+    	queries.add("Tower of Pisa");
+    	queries.add("Mount Eden crater");
+    	queries.add("St. Peter’s  Cathedral");
+    	
+    	ArrayList<Tweet> resp2 = searcher.SearchForTweets(queries);
+    	
+    	queries.clear();
+    	//landmark + general
+    	queries.add("eiffel tower vacation");
+    	queries.add("statue of liberty travel");
+    	queries.add("niagara falls vacation");
+    	queries.add("taj mahal travel");
+    	queries.add("Capitol Hill vacation");
+    	
+    	ArrayList<Tweet> resp3 = searcher.SearchForTweets(queries);
+    	
+    	queries.clear();
+    	
+    	String fullTweet = resp3.get(0).getTweetText();
 		//List<TweetNLP> t = parser.TagTheTweet("I love the Eiffel Tower cc @twittingsaggu");
 		
 		//List<String> candidates = parser.GenerateCandidateSubStringList(t);
@@ -54,6 +90,7 @@ public class Demo {
 		//{
 		if(landmark != null)
 		{
+			System.out.println(fullTweet);
 			System.out.println(landmark.getName() + " " + landmark.getCountry());
 		}
 		else

@@ -6,16 +6,18 @@ import gazetteer.Tweet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import tweetparser.ParseATweet;
+import tweetparser.StreamingTweets;
 import tweetparser.TweetSearcher;
 import util.QGramDistance;
 
 
 public class Demo {
 	
-	public static void main(String args[])
+	public static void main(String args[]) throws InterruptedException
 	{
-		ParseATweet pat = new ParseATweet();
-		
+		StreamingTweets sttw = new StreamingTweets();
+    	sttw.findTweets();
+    	
 		//List<String> temp = pat.TokenizeTweet("this is a    tweet @hero    @zzero   @herooo");
 		//for(int i=0;i<temp.size();i++)System.out.print(temp.get(i) + " ");
 		//List<String> tr = new ArrayList<String>();
@@ -35,9 +37,9 @@ public class Demo {
 		
 		//System.out.println(QGramDistance.distance("Stat of libe", "Statue of Liberty"));
 		
-		ParseATweet parser = new ParseATweet();
+		//ParseATweet parser = new ParseATweet();
 		
-		TweetSearcher searcher = new TweetSearcher();
+		/*TweetSearcher searcher = new TweetSearcher();
     	ArrayList<String> queries = new ArrayList<String>();
     	
     	//general queries
@@ -69,9 +71,11 @@ public class Demo {
     	
     	ArrayList<Tweet> resp3 = searcher.SearchForTweets(queries);
     	
-    	queries.clear();
+    	queries.clear();*/
     	
-    	String fullTweet = resp3.get(0).getTweetText();
+    	/*String fullTweet = "I love statue of liberty";//resp3.get(0).getTweetText();
+    	
+    	
 		//List<TweetNLP> t = parser.TagTheTweet("I love the Eiffel Tower cc @twittingsaggu");
 		
 		//List<String> candidates = parser.GenerateCandidateSubStringList(t);
@@ -93,7 +97,7 @@ public class Demo {
 		
 		
 		
-		QGramDistance q = new QGramDistance();
+		QGramDistance q = new QGramDistance();*/
 		//System.out.print(q.getSimilarity("statue of liberty", "statue of liberty", 2));
 		
 		

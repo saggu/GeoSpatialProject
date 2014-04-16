@@ -27,14 +27,6 @@ public class Demo {
 			//System.out.print(t.toString() + " ");
 		//}
 		
-		Multimap<String, PopularLandmarks> landmarks = ArrayListMultimap.create();
-		
-		landmarks.put("S",PopularLandmarks.CreateLandmark("Statue of Liberty", "New York", "US"));
-		landmarks.put("E",PopularLandmarks.CreateLandmark("Eiffel Tower", "Paris", "France"));
-		landmarks.put("T",PopularLandmarks.CreateLandmark("Taj Mahal", "Agra", "India"));
-		landmarks.put("M",PopularLandmarks.CreateLandmark("Machu Picchu", "Cuzco", "Peru"));
-		landmarks.put("B",PopularLandmarks.CreateLandmark("Blue Domed Church", "Santorini", "Greece"));
-		landmarks.put("B",PopularLandmarks.CreateLandmark("Big Ben", "London", "United Kingdom"));
 		
 		//System.out.println(DamerauLevenshtein.damerauLevenshteinDistanceCaseInsensitive("Statu o Libert", "Statue of Liberty"));
 		//System.out.println(DamerauLevenshtein.damerauLevenshteinDistanceCaseInsensitive("Statue of Liberty", "Statue of Liberty"));
@@ -84,7 +76,7 @@ public class Demo {
 		
 		//List<String> candidates = parser.GenerateCandidateSubStringList(t);
 		
-		PopularLandmarks landmark = parser.FindLandmark(fullTweet, landmarks);
+		PopularLandmarks landmark = parser.FindLandmark(fullTweet, PopularLandmarks.CreateLandmarks());
 		
 		//for (String candiate : candidates)
 		//{

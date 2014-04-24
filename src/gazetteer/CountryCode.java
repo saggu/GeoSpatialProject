@@ -1,12 +1,38 @@
 package gazetteer;
 
+/*#####################################################################
+ * 
+ * CLAVIN (Cartographic Location And Vicinity INdexer)
+ * ---------------------------------------------------
+ * 
+ * Copyright (C) 2012-2013 Berico Technologies
+ * http://clavin.bericotechnologies.com
+ * 
+ * ====================================================================
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * ====================================================================
+ * 
+ * CountryCode.java
+ * 
+ *###################################################################*/
+
 /**
  * ISO-3166 2-letter country codes used by GeoNames.
  *
  */
-
 public enum CountryCode {
-	
     AD("Andorra", 3041565),
     AE("United Arab Emirates", 290557),
     AF("Afghanistan", 1149361),
@@ -257,27 +283,27 @@ public enum CountryCode {
     ZA("South Africa", 953987),
     ZM("Zambia", 895949),
     ZW("Zimbabwe", 878675),
-    CS("Serbia and Montenegro", GeoRecordName.OUT_OF_BOUNDS), // no longer exists
-    AN("Netherlands Antilles", GeoRecordName.OUT_OF_BOUNDS), // no longer exists
+    CS("Serbia and Montenegro", GeoName.OUT_OF_BOUNDS), // no longer exists
+    AN("Netherlands Antilles", GeoName.OUT_OF_BOUNDS), // no longer exists
     
     // manually added for locations not assigned to a specific country
-    NULL("No Man's Land", GeoRecordName.OUT_OF_BOUNDS);
+    NULL("No Man's Land", GeoName.OUT_OF_BOUNDS);
     
     // country name
     public final String name;
     
     // unique identifier
-    public final int geoRecordID;
+    public final int geonameID;
     
     /**
-     * Constructor for CountryCode enum type.
+     * Constructor for {@link CountryCode} enum type.
      * 
      * @param name          country name
      * @param geonameID     unique identifier
      */
-    private CountryCode(String name, int geoRecordID) {
+    private CountryCode(String name, int geonameID) {
         this.name = name;
-        this.geoRecordID = geoRecordID;
+        this.geonameID = geonameID;
     }
-
+    
 }

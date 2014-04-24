@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import gazetteer.PopularLandmarks;
@@ -5,18 +6,24 @@ import gazetteer.Tweet;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
+
 import tweetparser.ParseATweet;
 import tweetparser.StreamingTweets;
 import tweetparser.TweetSearcher;
+import twitter4j.TwitterException;
 import util.QGramDistance;
 
 
 public class Demo {
 	
-	public static void main(String args[]) throws InterruptedException
+	public static void main(String args[]) throws InterruptedException, TwitterException
 	{
 		StreamingTweets sttw = new StreamingTweets();
-    	sttw.findTweets();
+		Multimap<String,PopularLandmarks> pop = PopularLandmarks.CreateLandmarks();
+		
+		//ParseATweet parser = new ParseATweet();
+    	//sttw.findTweets(pop.values());
     	
 		//List<String> temp = pat.TokenizeTweet("this is a    tweet @hero    @zzero   @herooo");
 		//for(int i=0;i<temp.size();i++)System.out.print(temp.get(i) + " ");
@@ -37,7 +44,7 @@ public class Demo {
 		
 		//System.out.println(QGramDistance.distance("Stat of libe", "Statue of Liberty"));
 		
-		//ParseATweet parser = new ParseATweet();
+		//
 		
 		/*TweetSearcher searcher = new TweetSearcher();
     	ArrayList<String> queries = new ArrayList<String>();
@@ -73,37 +80,66 @@ public class Demo {
     	
     	queries.clear();*/
     	
-    	/*String fullTweet = "I love statue of liberty";//resp3.get(0).getTweetText();
+		ArrayList<Tweet> resp = sttw.generateTweetsOutput();
+		WriteTweetsToFile(resp);
+    	//String fullTweet = "I love statue of liberty";//resp3.get(0).getTweetText();
     	
     	
 		//List<TweetNLP> t = parser.TagTheTweet("I love the Eiffel Tower cc @twittingsaggu");
 		
 		//List<String> candidates = parser.GenerateCandidateSubStringList(t);
-		
-		PopularLandmarks landmark = parser.FindLandmark(fullTweet, PopularLandmarks.CreateLandmarks());
+		/*int cont = 0;
+		System.out.println(resp.size());
+		for(int i = 0; i < 70; i++){
+			ArrayList<String> founds = new ArrayList<String>();
+			for(int j = 0; j < 100; j++){
+				Tweet status = resp.get(cont);
+				PopularLandmarks landmark = parser.FindLandmark(status.getTweetText(), PopularLandmarks.CreateLandmarks());
+				if(landmark != null)
+				{
+					String f = status.getUsername() + " - " + status.getLocation() + " - " + status.getTweetText()  + " - " + landmark.getName() + " " + landmark.getCountry();
+					founds.add(f);
+				}
+				cont++;
+			}
+			if(founds.size() == 0)
+				System.out.println("NOT FOUND");
+			for(int k=0; k < founds.size(); k++)
+				System.out.println(founds.get(k));
+		}*/
 		
 		//for (String candiate : candidates)
 		//{
-		if(landmark != null)
-		{
-			System.out.println(fullTweet);
-			System.out.println(landmark.getName() + " " + landmark.getCountry());
-		}
-		else
-		{
-			System.out.print("NULL");
-		}
+		
 		//}
 		
 		
-		
-		QGramDistance q = new QGramDistance();*/
 		//System.out.print(q.getSimilarity("statue of liberty", "statue of liberty", 2));
 		
 		
 		
 
 				
+	}
+	
+	
+	public static void WriteTweetsToFile(ArrayList<Tweet> tweets){
+		String filename = "tweets.json";
+		
+		try {
+			PrintWriter out = new PrintWriter(filename);
+			for(Tweet tw : tweets){
+				Gson gson = new Gson();
+				String json = gson.toJson(tw);
+				out.println(json);
+				//out.println(tw.getTweetText());
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }

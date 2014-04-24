@@ -1,10 +1,18 @@
 package tweetparser;
 
+import gazetteer.PopularLandmarks;
+import gazetteer.Tweet;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import redis.clients.jedis.Jedis;
+import twitter4j.Status;
+import twitter4j.TwitterException;
+import twitter4j.TwitterObjectFactory;
 import util.T2LResource;
 
 import com.google.common.collect.Lists;
@@ -25,8 +33,7 @@ public class StreamingTweets {
 	public StreamingTweets(){
 		jedis = new Jedis("localhost");
 	}
-	public void findTweets() {
-		System.out.println("shshs");
+	public void findTweets(Collection<PopularLandmarks> list) {
 		BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
 		BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(1000);
 
@@ -34,9 +41,19 @@ public class StreamingTweets {
 		Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
 		StreamingEndpoint endpoint = new StatusesFilterEndpoint();
 		// Optional: set up some followings and track terms
+		//"vacation instagram","vacation pic.twitter",
+		//"vacation imgur", "travel instagram", "travel pic.twitter", "travel imgur",
+		//"trip instagram", "trip pic.twitter", "trip imgur",
 		List<String> terms = Lists.newArrayList("vacation instagram","vacation pic.twitter",
 				"vacation imgur", "travel instagram", "travel pic.twitter", "travel imgur",
 				"trip instagram", "trip pic.twitter", "trip imgur");
+		
+		for(PopularLandmarks pop : list){
+			terms.add(pop.getName() + " instagram");
+			terms.add(pop.getName() + " pic.twitter");
+			terms.add(pop.getName() + " imgur");
+		}
+		
 		
 		//((StatusesFilterEndpoint) endpoint).followings(followings);
 		((StatusesFilterEndpoint) endpoint).trackTerms(terms);
@@ -69,5 +86,19 @@ public class StreamingTweets {
 			jedis.close();
 		}
 		hosebirdClient.stop();
+	}
+	
+	public ArrayList<Tweet> generateTweetsOutput() throws TwitterException{
+		ArrayList<Tweet> tw = new ArrayList<Tweet>();
+		List<String> listTweetsID = jedis.lrange("tweets", 0, -1);
+		
+		for(String id : listTweetsID){
+			String tweet = jedis.get("tweet:" + id);
+			Status status = TwitterObjectFactory.createStatus(tweet);
+			tw.add(new Tweet(status.getUser().getScreenName(),status.getUser().getLocation(),status.getText(),status.getCreatedAt().toString()));
+		}
+		
+		
+		return tw;
 	}
 }

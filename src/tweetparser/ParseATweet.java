@@ -15,6 +15,7 @@ import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.process.Tokenizer;
+import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
 import gazetteer.PopularLandmarks;
@@ -22,10 +23,16 @@ import gazetteer.PopularLandmarks;
 public class ParseATweet implements TweetParser{
 	
 	List<TweetNLP> taggedTweet;
+	LexicalizedParser lp;
+	TreebankLanguagePack tlp;
 	
 	public ParseATweet()
 	{
 		taggedTweet = new ArrayList<TweetNLP>();
+		String grammar = "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz";
+	    String[] options = { "-maxLength", "80", "-retainTmpSubcategories" };
+	    lp = LexicalizedParser.loadModel(grammar, options);
+	    tlp = lp.getOp().langpack(); 
 	}
 	
 	private String RemoveTwitterHandles(String tweet) 
@@ -60,14 +67,11 @@ public class ParseATweet implements TweetParser{
 		String tweet = RemoveTwitterHandles(fullTweet);
 		
 		taggedTweet = new ArrayList<TweetNLP>();
-		
-		String grammar = "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz";
-	    String[] options = { "-maxLength", "80", "-retainTmpSubcategories" };
-	    LexicalizedParser lp = LexicalizedParser.loadModel(grammar, options);
-	    TreebankLanguagePack tlp = lp.getOp().langpack();
 	    
-	    Tokenizer<? extends HasWord> toke =
-		tlp.getTokenizerFactory().getTokenizer(new StringReader(tweet));
+		
+		TokenizerFactory fact = tlp.getTokenizerFactory();
+		fact.setOptions("untokenizable=noneDelete");
+	    Tokenizer<? extends HasWord> toke = fact.getTokenizer(new StringReader(tweet));
 		List<? extends HasWord> sentence2 = toke.tokenize();
 		
 	    Tree parse = lp.parse(sentence2);

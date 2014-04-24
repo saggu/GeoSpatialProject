@@ -3,3 +3,8 @@ lib/
 src/util/t2l.properties
 .classpath
 .settings
+.DS_Store
+dump.rdb
+redis.conf
+tweets.csv
+tweets.json

@@ -1,13 +1,42 @@
 package gazetteer;
 
+/*#####################################################################
+ * 
+ * CLAVIN (Cartographic Location And Vicinity INdexer)
+ * ---------------------------------------------------
+ * 
+ * Copyright (C) 2012-2013 Berico Technologies
+ * http://clavin.bericotechnologies.com
+ * 
+ * ====================================================================
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * ====================================================================
+ * 
+ * FeatureCode.java
+ * 
+ *###################################################################*/
+
 /**
  * Individual feature codes used by GeoNames.
  * (see http://www.geonames.org/export/codes.html)
+ * 
+ * TODO: generate this code directly from the GeoNames featureCodes_en.txt file
+ *
  */
-
 public enum FeatureCode {
-	
-	ADM1(FeatureClass.A, "first-order administrative division", "a primary administrative division of a country, such as a state in the United States"),
+    ADM1(FeatureClass.A, "first-order administrative division", "a primary administrative division of a country, such as a state in the United States"),
     ADM1H(FeatureClass.A, "historical first-order administrative division", "a former first-order administrative division"),
     ADM2(FeatureClass.A, "second-order administrative division", "a subdivision of a first-order administrative division"),
     ADM2H(FeatureClass.A, "historical second-order administrative division", "a former second-order administrative division"),
@@ -684,10 +713,16 @@ public enum FeatureCode {
     // name of feature code
     public final String type;
     
- // description of feature code
+    // description of feature code
     public final String description;
     
-    //constructor
+    /**
+     * Constructor for {@link FeatureCode} enum type.
+     * 
+     * @param featureClass      class this code belongs to
+     * @param type              name of code
+     * @param description       description of code
+     */
     private FeatureCode(FeatureClass featureClass, String type, String description) {
         this.featureClass = featureClass;
         this.type = type;

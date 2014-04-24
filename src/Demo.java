@@ -1,125 +1,173 @@
 import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
+import locationparser.ExtractLocation;
+
+import gazetteer.GeoName;
 import gazetteer.PopularLandmarks;
 import gazetteer.Tweet;
+import gazetteer.VisualizationHelper;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 
 import tweetparser.ParseATweet;
-import tweetparser.StreamingTweets;
-import tweetparser.TweetSearcher;
-import twitter4j.TwitterException;
-import util.QGramDistance;
 
+import tweetparser.FiguredOutTweet;
 
 public class Demo {
 	
-	public static void main(String args[]) throws InterruptedException, TwitterException
+	public static ArrayList<Tweet> readFile(){
+        ArrayList<Tweet> sentences = new ArrayList<Tweet>();
+       
+        BufferedReader br = null;
+         
+        try {
+ 
+            String sCurrentLine;
+ 
+            br = new BufferedReader(new FileReader("tweets.json"));
+ 
+            while ((sCurrentLine = br.readLine()) != null) {
+            	
+            	//String[] test = sCurrentLine.split("\\$");
+            	//System.out.println(test[1]);
+            	Gson gs = new Gson();
+            	Tweet t = gs.fromJson(sCurrentLine, Tweet.class);
+                sentences.add(t);
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           
+        }
+   
+       
+        return sentences;
+    }
+	
+	public List<FiguredOutTweet> FigureThemOut()
 	{
-		StreamingTweets sttw = new StreamingTweets();
-		Multimap<String,PopularLandmarks> pop = PopularLandmarks.CreateLandmarks();
-		
-		//ParseATweet parser = new ParseATweet();
-    	//sttw.findTweets(pop.values());
-    	
-		//List<String> temp = pat.TokenizeTweet("this is a    tweet @hero    @zzero   @herooo");
-		//for(int i=0;i<temp.size();i++)System.out.print(temp.get(i) + " ");
-		//List<String> tr = new ArrayList<String>();
-		//tr = pat.RemoveTwitterHandles(temp);
-		
-		//System.out.println("Total Items:" + tr.size());
-		//for(String t:tr)
-		//{
-			//System.out.print(t.toString() + " ");
-		//}
-		
-		
-		//System.out.println(DamerauLevenshtein.damerauLevenshteinDistanceCaseInsensitive("Statu o Libert", "Statue of Liberty"));
-		//System.out.println(DamerauLevenshtein.damerauLevenshteinDistanceCaseInsensitive("Statue of Liberty", "Statue of Liberty"));
+		ArrayList<Tweet> al = readFile();
+		List<FiguredOutTweet> fot = new ArrayList<FiguredOutTweet>();
+		List<GeoName> geoNames = new ArrayList<GeoName>();
+		ExtractLocation el = new ExtractLocation();
+		ParseATweet parser = new ParseATweet();
 
-		//System.out.println(QGramDistance.distance("statu of", "Statue of Liberty"));
+		int counter = 100;//do it for first 100 tweets
 		
-		//System.out.println(QGramDistance.distance("Stat of libe", "Statue of Liberty"));
-		
-		//
-		
-		/*TweetSearcher searcher = new TweetSearcher();
-    	ArrayList<String> queries = new ArrayList<String>();
-    	
-    	//general queries
-    	queries.add("spring break");
-    	queries.add("vacation");
-    	queries.add("travel");
-    	queries.add("holiday");
-    	queries.add("landmark");
-    	
-    	ArrayList<Tweet> resp1 = searcher.SearchForTweets(queries);
-    	
-    	queries.clear();
-    	//landmark queries
-    	queries.add("loch ness");
-    	queries.add("Trevi Fountain");
-    	queries.add("Tower of Pisa");
-    	queries.add("Mount Eden crater");
-    	queries.add("St. Peter’s  Cathedral");
-    	
-    	ArrayList<Tweet> resp2 = searcher.SearchForTweets(queries);
-    	
-    	queries.clear();
-    	//landmark + general
-    	queries.add("eiffel tower vacation");
-    	queries.add("statue of liberty travel");
-    	queries.add("niagara falls vacation");
-    	queries.add("taj mahal travel");
-    	queries.add("Capitol Hill vacation");
-    	
-    	ArrayList<Tweet> resp3 = searcher.SearchForTweets(queries);
-    	
-    	queries.clear();*/
-    	
-		ArrayList<Tweet> resp = sttw.generateTweetsOutput();
-		WriteTweetsToFile(resp);
-    	//String fullTweet = "I love statue of liberty";//resp3.get(0).getTweetText();
-    	
-    	
-		//List<TweetNLP> t = parser.TagTheTweet("I love the Eiffel Tower cc @twittingsaggu");
-		
-		//List<String> candidates = parser.GenerateCandidateSubStringList(t);
-		/*int cont = 0;
-		System.out.println(resp.size());
-		for(int i = 0; i < 70; i++){
-			ArrayList<String> founds = new ArrayList<String>();
-			for(int j = 0; j < 100; j++){
-				Tweet status = resp.get(cont);
-				PopularLandmarks landmark = parser.FindLandmark(status.getTweetText(), PopularLandmarks.CreateLandmarks());
+		for (Tweet twet : al)
+		{
+			if(counter > 0)
+			{
+				PopularLandmarks landmark = parser.FindLandmark(twet.getTweetText(), PopularLandmarks.CreateLandmarks());
+				
 				if(landmark != null)
 				{
-					String f = status.getUsername() + " - " + status.getLocation() + " - " + status.getTweetText()  + " - " + landmark.getName() + " " + landmark.getCountry();
-					founds.add(f);
+					geoNames = el.ResolveLocationList(twet.getLocation());
+					
+					if(geoNames.size() > 0)
+					{
+						fot.add(new FiguredOutTweet(twet, landmark, geoNames));
+						//geoNames.clear();
+					}
 				}
-				cont++;
 			}
-			if(founds.size() == 0)
-				System.out.println("NOT FOUND");
-			for(int k=0; k < founds.size(); k++)
-				System.out.println(founds.get(k));
-		}*/
-		
-		//for (String candiate : candidates)
-		//{
-		
-		//}
-		
-		
-		//System.out.print(q.getSimilarity("statue of liberty", "statue of liberty", 2));
-		
-		
-		
+			
+			counter--;
+		}
 
+		return fot;
+	}
+	
+	public void GenerateJsonForVisualization(List<FiguredOutTweet> figuredOutTweet)
+	{
+		HashMap<String, VisualizationHelper> helper = new HashMap<String, VisualizationHelper>();
+		List<VisualizationHelper> vhList = new ArrayList<VisualizationHelper>();
+		
+		List<FiguredOutTweet> fot  = figuredOutTweet;
+		
+		for(FiguredOutTweet ft : fot)
+		{
+			System.out.println(ft.getTweet().getTweetText());
+			System.out.println(ft.getMatchedLandmark().getName());
+			System.out.println(ft.getUserLocation().get(0));
+			
+			String landmarkName = ft.getMatchedLandmark().getName().toUpperCase();
+			
+			//if we donot have the VisualizationHelper object created for this landmark
+			if(helper.get(landmarkName) == null)
+			{
+				List<Tweet> twList = new ArrayList<Tweet>();
+				twList.add(ft.getTweet());
+				List<GeoName> gnList = new ArrayList<GeoName>();
+				GeoName gnCountry = ft.getUserLocation().get(0); 
+				gnList.add(gnCountry); //just get the first location
+				HashMap<String, Integer> countCountries = new HashMap<String, Integer>();
+				countCountries.put(gnCountry.getPrimaryCountryName().toUpperCase(), 1);
 				
+				
+				VisualizationHelper  vh = new VisualizationHelper(ft.getMatchedLandmark(), twList, gnList, countCountries);
+				
+				vhList.add(vh);
+				helper.put(landmarkName, vh);
+			}
+			else
+			{
+				VisualizationHelper vh = helper.get(landmarkName);
+				 boolean isCountryFound = false;
+				 List<Tweet> twList = vh.getTweets();
+				
+				twList.add(ft.getTweet());
+				
+				List<GeoName> gnList =vh.getGeoNames();
+				GeoName gnCountry = ft.getUserLocation().get(0); 
+				String country = gnCountry.getPrimaryCountryName().toUpperCase();
+				
+				HashMap<String, Integer> countCountries = vh.getCountCountries();
+				
+				for(GeoName gn : gnList)
+				{
+					if(gnCountry.getPrimaryCountryName() == gn.getPrimaryCountryName())
+					{
+						isCountryFound = true;
+					}
+				}
+				
+				if(isCountryFound)
+				{
+					countCountries.put(country, countCountries.get(country) + 1);
+				}
+				else
+				{
+					gnList.add(gnCountry);
+					countCountries.put(country, 1);
+				}
+				
+				
+			}
+		}
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(vhList);
+		
+		System.out.print(json);
+		
+		
+	}
+	
+	public static void main(String args[])
+	{
+		Demo dm = new Demo();
+		List<FiguredOutTweet> fot = dm.FigureThemOut();
+		
+		dm.GenerateJsonForVisualization(fot);		
+		
+			
 	}
 	
 	

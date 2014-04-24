@@ -36,6 +36,8 @@ public class StreamingTweets {
 	public void findTweets(Collection<PopularLandmarks> list) {
 		BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
 		BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(1000);
+		
+		
 
 		//Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
 		Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
@@ -76,13 +78,13 @@ public class StreamingTweets {
 		try {
 			// on a different thread, or multiple different threads....
 			while (!hosebirdClient.isDone()) {
-			  String msg = msgQueue.take();
-			  long id = jedis.incr("globalID:tweets");
+				String msg = msgQueue.take();
+				long id = jedis.incr("globalID:tweets");
 			  jedis.set("tweet:" + Long.toString(id), msg);
 			  jedis.lpush("tweets", Long.toString(id));
 			}
-		} catch (InterruptedException e) {
-			System.out.println("Connection closed!");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			jedis.close();
 		}
 		hosebirdClient.stop();

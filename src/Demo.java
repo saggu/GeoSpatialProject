@@ -1,22 +1,22 @@
-import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import locationparser.ExtractLocation;
 
 import gazetteer.GeoName;
 import gazetteer.PopularLandmarks;
 import gazetteer.Tweet;
 import gazetteer.VisualizationHelper;
+import gazetteer.VisualizationJSON;
 
 import com.google.gson.Gson;
 
+import redis.clients.jedis.Jedis;
+import tweetparser.FiguredOutTweet;
 import tweetparser.ParseATweet;
 
-import tweetparser.FiguredOutTweet;
 
 public class Demo {
 	
@@ -57,7 +57,7 @@ public class Demo {
 		List<GeoName> geoNames = new ArrayList<GeoName>();
 		ExtractLocation el = new ExtractLocation();
 		ParseATweet parser = new ParseATweet();
-
+		
 		int counter = 100;//do it for first 100 tweets
 		
 		for (Tweet twet : al)
@@ -70,17 +70,17 @@ public class Demo {
 				{
 					geoNames = el.ResolveLocationList(twet.getLocation());
 					
-					if(geoNames.size() > 0)
-					{
+					//if(geoNames.size() > 0)
+					//{
 						fot.add(new FiguredOutTweet(twet, landmark, geoNames));
 						//geoNames.clear();
-					}
+					//}
 				}
 			}
 			
 			counter--;
 		}
-
+		
 		return fot;
 	}
 	
@@ -153,10 +153,55 @@ public class Demo {
 		}
 		
 		Gson gson = new Gson();
+		HashMap<String,Object> finalres = new HashMap<String, Object>();
+		finalres.put("landmarkName", "statue of liberty");
+		
+		HashMap<String,Object> countries = new HashMap<String, Object>();
+		countries.put("Spain", 3);
+		
+		finalres.put("countries", countries);
+		
 		String json = gson.toJson(vhList);
 		
 		System.out.print(json);
 		
+		
+	}
+	
+	public void GenerateJSON(List<FiguredOutTweet> figuredOutTweet)
+	{
+		List<VisualizationJSON> vs = new ArrayList<VisualizationJSON>();
+		Gson gson = new Gson();
+		
+		for(FiguredOutTweet fot : figuredOutTweet)
+		{
+			VisualizationJSON vsObj;
+			if(fot.getUserLocation().size() > 0)
+			{
+				GeoName gn = fot.getUserLocation().get(0);
+				PopularLandmarks pl = fot.getMatchedLandmark();
+				vsObj = new VisualizationJSON(fot.getTweet().getTweetText(), fot.getTweet().getUsername(), gn.getPrimaryCountryName(), Double.toString(gn.longitude), Double.toString(gn.latitude), pl.getName(), pl.getLongitude(), pl.getLatitude());
+				vs.add(vsObj);
+			}
+			else
+			{
+				PopularLandmarks pl = fot.getMatchedLandmark();
+				vsObj = new VisualizationJSON(fot.getTweet().getTweetText(), fot.getTweet().getUsername(), "","","", pl.getName(), pl.getLongitude(), pl.getLatitude());
+				vs.add(vsObj);
+			}
+			
+			String json = gson.toJson(vsObj);
+			
+			Jedis jds = new Jedis("localhost");
+			
+			jds.publish("tweet2location", json);
+			
+			System.out.print(json);
+			
+		}
+		
+		
+				
 		
 	}
 	
@@ -165,29 +210,17 @@ public class Demo {
 		Demo dm = new Demo();
 		List<FiguredOutTweet> fot = dm.FigureThemOut();
 		
-		dm.GenerateJsonForVisualization(fot);		
+		dm.GenerateJSON(fot);
+		
+		
+		
+		
+		
+		//dm.GenerateJsonForVisualization(fot);
+		
+		
 		
 			
-	}
-	
-	
-	public static void WriteTweetsToFile(ArrayList<Tweet> tweets){
-		String filename = "tweets.json";
-		
-		try {
-			PrintWriter out = new PrintWriter(filename);
-			for(Tweet tw : tweets){
-				Gson gson = new Gson();
-				String json = gson.toJson(tw);
-				out.println(json);
-				//out.println(tw.getTweetText());
-			}
-			out.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 	}
 
 }

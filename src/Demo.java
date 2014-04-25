@@ -1,11 +1,14 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import locationparser.ExtractLocation;
 
 import gazetteer.GeoName;
+import gazetteer.LandmarksJson;
 import gazetteer.PopularLandmarks;
 import gazetteer.Tweet;
 import gazetteer.VisualizationHelper;
@@ -62,8 +65,8 @@ public class Demo {
 		
 		for (Tweet twet : al)
 		{
-			if(counter > 0)
-			{
+			//if(counter > 0)
+			//{
 				PopularLandmarks landmark = parser.FindLandmark(twet.getTweetText(), PopularLandmarks.CreateLandmarks());
 				
 				if(landmark != null)
@@ -76,9 +79,9 @@ public class Demo {
 						//geoNames.clear();
 					//}
 				}
-			}
+			//}
 			
-			counter--;
+			//counter--;
 		}
 		
 		return fot;
@@ -172,6 +175,8 @@ public class Demo {
 	{
 		List<VisualizationJSON> vs = new ArrayList<VisualizationJSON>();
 		Gson gson = new Gson();
+		int counter=0;
+		
 		
 		for(FiguredOutTweet fot : figuredOutTweet)
 		{
@@ -192,11 +197,24 @@ public class Demo {
 			
 			String json = gson.toJson(vsObj);
 			
-			Jedis jds = new Jedis("localhost");
+			//Jedis jds = new Jedis("localhost");
 			
-			jds.publish("tweet2location", json);
+			//jds.publish("tweet2location", json);
 			
-			System.out.print(json);
+			PrintWriter out;
+			try {
+				String filename = "json/tweet_" + counter + ".json";
+				out = new PrintWriter(filename);
+				out.println(json);
+				out.close();
+				counter++;
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			//System.out.print(json);
 			
 		}
 		
@@ -205,12 +223,18 @@ public class Demo {
 		
 	}
 	
+	
+	
 	public static void main(String args[])
 	{
 		Demo dm = new Demo();
 		List<FiguredOutTweet> fot = dm.FigureThemOut();
 		
+		List<LandmarksJson> lsj = new ArrayList<LandmarksJson>();
+		
 		dm.GenerateJSON(fot);
+		
+		System.out.print("Done!");
 		
 		
 		

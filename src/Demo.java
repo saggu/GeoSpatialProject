@@ -8,7 +8,7 @@ import java.util.List;
 import locationparser.ExtractLocation;
 
 import gazetteer.GeoName;
-import gazetteer.LandmarksJson;
+//import gazetteer.LandmarksJson;
 import gazetteer.PopularLandmarks;
 import gazetteer.Tweet;
 import gazetteer.VisualizationHelper;
@@ -230,7 +230,7 @@ public class Demo {
 		Demo dm = new Demo();
 		List<FiguredOutTweet> fot = dm.FigureThemOut();
 		
-		List<LandmarksJson> lsj = new ArrayList<LandmarksJson>();
+		//List<LandmarksJson> lsj = new ArrayList<LandmarksJson>();
 		
 		dm.GenerateJSON(fot);
 		

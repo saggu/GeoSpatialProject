@@ -100,7 +100,6 @@ public class StreamingTweets {
 			tw.add(new Tweet(status.getUser().getScreenName(),status.getUser().getLocation(),status.getText(),status.getCreatedAt().toString()));
 		}
 		
-		
 		return tw;
 	}
 }

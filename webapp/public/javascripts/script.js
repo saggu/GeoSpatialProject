@@ -92,11 +92,13 @@ function parseGeoTweet(tweet){
 }
 
 function populate(tweet){
+  removeLandmarkMarkers();
   var temp_landmark = tweet.landmarkName;
   var temp_country = tweet.tweetUserCountry;
 
   //let's edit the data associate to the marker
   var marker = markersByLandmarks[temp_landmark];
+  marker.setMap(map);
   marker.dataLandmark.total = marker.dataLandmark.total + 1;
   
   //now we need to check if the country exists
@@ -116,10 +118,16 @@ function populate(tweet){
   countrySelected = temp_country;
   landmarkSelected = marker;
   landmarkSelected.setAnimation(google.maps.Animation.BOUNCE);
-  infowindow = createLandmarkInfoWindow(marker.dataLandmark['name'],marker.dataLandmark['total'],marker.dataLandmark['image']);
+  infowindow = createLandmarkInfoWindow(marker.dataLandmark['name'],marker.dataLandmark['total'],marker.dataLandmark['image'],countrySelected,marker.dataLandmark["top-countries"][countrySelected].visitors);
   infowindow.open(map,landmarkSelected);
 
   createCountryMarkers(marker.dataLandmark);
+}
+
+function removeLandmarkMarkers(){
+  for(l in markersByLandmarks){
+    markersByLandmarks[l].setMap(null);
+  }
 }
 
 function removeCountryMarkers(){
@@ -161,7 +169,7 @@ function createCountryMarkers(dataLandmark){
       icon: pinCountryImage,
       shadow: pinShadow
     });
-    var countryOptions = {
+    /*var countryOptions = {
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
       strokeWeight: 2,
@@ -169,9 +177,10 @@ function createCountryMarkers(dataLandmark){
       fillOpacity: 0.35,
       map: map,
       center: countryMarker.position,
-      radius: 500000 * (dataLandmark['top-countries'][country].visitors/dataLandmark['total'])
+      radius: 500000 * (dataLandmark['top-countries'][country].visitors/dataLandmark['total']),
+      scale:20
     };
-    countryCircle = new google.maps.Circle(countryOptions);
+    countryCircle = new google.maps.Circle(countryOptions);*/
     cur = createCurvedLine(landmarkSelected,countryMarker);
     
     if(country == countrySelected){
@@ -186,15 +195,20 @@ function createCountryMarkers(dataLandmark){
 
     allCountryMarkers.push(countryMarker);
     allCountryMarkers.push(cur);
-    allCountryMarkers.push(countryCircle);
+    //allCountryMarkers.push(countryCircle);
   }
 }
 
-function createLandmarkInfoWindow(name,total,image){
+function createLandmarkInfoWindow(name,total,image,country,tcountry){
+  var ctext = '';
+  if(country){
+    ctext = '<p><b>From ' + country+ '</b>: ' + tcountry + '</p>';
+  }
   var contentString = '<div id="content">'+
       '<h3 id="firstHeading" class="firstHeading">'+ name + '</h3>'+
       '<div id="bodyContent">'+
       '<p><b>Total tweets:</b>' + total + '</p>'+
+      ctext +
       '<img src="'+ image +'" width="120px" height="120px" />'+
       '</div>'+
       '</div>';

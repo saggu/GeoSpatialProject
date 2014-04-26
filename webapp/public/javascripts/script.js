@@ -62,7 +62,8 @@ function initialize() {
 
   var socket = io.connect('http://localhost:3000');
   socket.on('tweet', function (tweet) {
-    parseGeoTweet(tweet);
+    parseGeoTweet(JSON.parse(tweet));
+    //parseGeoTweet(tweet);
   });
 }
 
@@ -99,19 +100,25 @@ function populate(tweet){
   marker.dataLandmark.total = marker.dataLandmark.total + 1;
   
   //now we need to check if the country exists
-  if(temp_country in marker.dataLandmark["top-countries"] && temp_country != ""){
-    marker.dataLandmark["top-countries"][temp_country].visitors += 1;
+  if(temp_country != ""){
+    if(temp_country in marker.dataLandmark["top-countries"]){
+      marker.dataLandmark["top-countries"][temp_country].visitors += 1;
+    }
+    else{
+      marker.dataLandmark["top-countries"] = {};
+      marker.dataLandmark["top-countries"][temp_country] = {};
+      marker.dataLandmark["top-countries"][temp_country].latitude = tweet.tUserCLatitude;
+      marker.dataLandmark["top-countries"][temp_country].longitude = tweet.tUserCLongitude;
+      marker.dataLandmark["top-countries"][temp_country].visitors = 1;
+    }  
   }
-  else{
-    marker.dataLandmark["top-countries"] = {};
-    marker.dataLandmark["top-countries"][temp_country] = {};
-    marker.dataLandmark["top-countries"][temp_country].latitude = tweet.tUserCLatitude;
-    marker.dataLandmark["top-countries"][temp_country].longitude = tweet.tUserCLongitude;
-    marker.dataLandmark["top-countries"][temp_country].visitors = 1;
-  }
-
+  
   countrySelected = temp_country;
   landmarkSelected = marker;
+  landmarkSelected.setAnimation(google.maps.Animation.BOUNCE);
+  infowindow = createLandmarkInfoWindow(marker.dataLandmark['name'],marker.dataLandmark['total'],marker.dataLandmark['image']);
+  infowindow.open(map,landmarkSelected);
+
   createCountryMarkers(marker.dataLandmark);
 }
 
@@ -136,19 +143,15 @@ function createLandmarkMarker(lat,lon,dataLandmark){
     shadow: pinShadow
   });
   landmarkMarker.dataLandmark = dataLandmark;
-  google.maps.event.addListener(landmarkMarker, 'click', function(){
+  /*google.maps.event.addListener(landmarkMarker, 'click', function(){
     landmarkSelected = this;
     createCountryMarkers(this.dataLandmark);
-  });
+  });*/
 
   return landmarkMarker;
 }
 
 function createCountryMarkers(dataLandmark){
-  //create infowindow
-  infowindow = createLandmarkInfoWindow(dataLandmark['name'],dataLandmark['total'],dataLandmark['image']);
-  infowindow.open(map,landmarkSelected);
-
   //create markers
   for(country in dataLandmark['top-countries']){
     countryMarker = new google.maps.Marker({
@@ -166,15 +169,21 @@ function createCountryMarkers(dataLandmark){
       fillOpacity: 0.35,
       map: map,
       center: countryMarker.position,
-      radius: 500000 * (dataLandmark['total']/dataLandmark['top-countries'][country].visitors)
+      radius: 500000 * (dataLandmark['top-countries'][country].visitors/dataLandmark['total'])
     };
     countryCircle = new google.maps.Circle(countryOptions);
     cur = createCurvedLine(landmarkSelected,countryMarker);
     
     if(country == countrySelected){
-      landmarkSelected.setAnimation(google.maps.Animation.BOUNCE);
       countryMarker.setAnimation(google.maps.Animation.BOUNCE);
     }
+    //zoom to markers
+    var latlngbounds = new google.maps.LatLngBounds();
+    latlngbounds.extend(landmarkSelected.position);
+    latlngbounds.extend(countryMarker.position);
+    
+    map.fitBounds(latlngbounds);
+
     allCountryMarkers.push(countryMarker);
     allCountryMarkers.push(cur);
     allCountryMarkers.push(countryCircle);

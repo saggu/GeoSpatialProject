@@ -3,22 +3,18 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import locationparser.ExtractLocation;
 
 import gazetteer.GeoName;
-//import gazetteer.LandmarksJson;
 import gazetteer.PopularLandmarks;
 import gazetteer.Tweet;
-import gazetteer.VisualizationHelper;
 import gazetteer.VisualizationJSON;
-
 import com.google.gson.Gson;
 
-import redis.clients.jedis.Jedis;
 import tweetparser.FiguredOutTweet;
 import tweetparser.ParseATweet;
+import util.QGramDistance;
 
 
 public class Demo {
@@ -27,6 +23,7 @@ public class Demo {
         ArrayList<Tweet> sentences = new ArrayList<Tweet>();
        
         BufferedReader br = null;
+        
          
         try {
  
@@ -61,121 +58,39 @@ public class Demo {
 		ExtractLocation el = new ExtractLocation();
 		ParseATweet parser = new ParseATweet();
 		
-		int counter = 100;//do it for first 100 tweets
+		int counter = 1000;//do it for first 100 tweets
 		
 		for (Tweet twet : al)
 		{
-			//if(counter > 0)
-			//{
+			if(counter > 0)
+			{
 				PopularLandmarks landmark = parser.FindLandmark(twet.getTweetText(), PopularLandmarks.CreateLandmarks());
 				
 				if(landmark != null)
 				{
 					geoNames = el.ResolveLocationList(twet.getLocation());
 					
-					//if(geoNames.size() > 0)
-					//{
+					if(geoNames.size() > 0)
+					{
 						fot.add(new FiguredOutTweet(twet, landmark, geoNames));
-						//geoNames.clear();
-					//}
+						geoNames.clear();
+					}
 				}
-			//}
+			}
 			
-			//counter--;
+			counter--;
 		}
 		
 		return fot;
 	}
 	
-	public void GenerateJsonForVisualization(List<FiguredOutTweet> figuredOutTweet)
-	{
-		HashMap<String, VisualizationHelper> helper = new HashMap<String, VisualizationHelper>();
-		List<VisualizationHelper> vhList = new ArrayList<VisualizationHelper>();
-		
-		List<FiguredOutTweet> fot  = figuredOutTweet;
-		
-		for(FiguredOutTweet ft : fot)
-		{
-			System.out.println(ft.getTweet().getTweetText());
-			System.out.println(ft.getMatchedLandmark().getName());
-			System.out.println(ft.getUserLocation().get(0));
-			
-			String landmarkName = ft.getMatchedLandmark().getName().toUpperCase();
-			
-			//if we donot have the VisualizationHelper object created for this landmark
-			if(helper.get(landmarkName) == null)
-			{
-				List<Tweet> twList = new ArrayList<Tweet>();
-				twList.add(ft.getTweet());
-				List<GeoName> gnList = new ArrayList<GeoName>();
-				GeoName gnCountry = ft.getUserLocation().get(0); 
-				gnList.add(gnCountry); //just get the first location
-				HashMap<String, Integer> countCountries = new HashMap<String, Integer>();
-				countCountries.put(gnCountry.getPrimaryCountryName().toUpperCase(), 1);
-				
-				
-				VisualizationHelper  vh = new VisualizationHelper(ft.getMatchedLandmark(), twList, gnList, countCountries);
-				
-				vhList.add(vh);
-				helper.put(landmarkName, vh);
-			}
-			else
-			{
-				VisualizationHelper vh = helper.get(landmarkName);
-				 boolean isCountryFound = false;
-				 List<Tweet> twList = vh.getTweets();
-				
-				twList.add(ft.getTweet());
-				
-				List<GeoName> gnList =vh.getGeoNames();
-				GeoName gnCountry = ft.getUserLocation().get(0); 
-				String country = gnCountry.getPrimaryCountryName().toUpperCase();
-				
-				HashMap<String, Integer> countCountries = vh.getCountCountries();
-				
-				for(GeoName gn : gnList)
-				{
-					if(gnCountry.getPrimaryCountryName() == gn.getPrimaryCountryName())
-					{
-						isCountryFound = true;
-					}
-				}
-				
-				if(isCountryFound)
-				{
-					countCountries.put(country, countCountries.get(country) + 1);
-				}
-				else
-				{
-					gnList.add(gnCountry);
-					countCountries.put(country, 1);
-				}
-				
-				
-			}
-		}
-		
-		Gson gson = new Gson();
-		HashMap<String,Object> finalres = new HashMap<String, Object>();
-		finalres.put("landmarkName", "statue of liberty");
-		
-		HashMap<String,Object> countries = new HashMap<String, Object>();
-		countries.put("Spain", 3);
-		
-		finalres.put("countries", countries);
-		
-		String json = gson.toJson(vhList);
-		
-		System.out.print(json);
-		
-		
-	}
 	
 	public void GenerateJSON(List<FiguredOutTweet> figuredOutTweet)
 	{
 		List<VisualizationJSON> vs = new ArrayList<VisualizationJSON>();
 		Gson gson = new Gson();
 		int counter=0;
+		
 		
 		
 		for(FiguredOutTweet fot : figuredOutTweet)
@@ -227,14 +142,171 @@ public class Demo {
 	
 	public static void main(String args[])
 	{
+		/*
+		ParseATweet ps = new ParseATweet();
+		
+		//ps.FindLandmark("Celebrating #Holi , mesmerised by the #TajMahal and avoiding conflict: http://ow.ly/wcJ9T  #travel #India #Delhi #Agra #festivals", PopularLandmarks.CreateLandmarks());
+		
+		
+		System.out.println("Looking for tweets...");
+		//StreamingTweets sttw = new StreamingTweets();
+	    //sttw.findTweets();
+		
+		BufferedReader br = null;
+        
+        try {
+ 
+            //String sCurrentLine;
+            Jedis jedis = new Jedis("localhost");
+            //Gson gs = new Gson();
+            //StringBuilder sb = new StringBuilder();
+            
+           // PrintWriter out;
+			
+			
+ 
+           // for(int i=0;i<3506;i++)
+            //{
+            	//System.out.println("File number:" + i);
+            	//sb.append("File number:" + i + "\n");
+            	//br = new BufferedReader(new FileReader("json/tweet_19.json"));
+            	//Tweet t = gs.fromJson("", Tweet.class);
+            	PopularLandmarks pl = ps.FindLandmark("So today i met The Taj Mahal #breathless #beauty #nofilter #agra #india ", PopularLandmarks.CreateLandmarks());
+            	//br.close();
+            	//System.out.println("Tweet:" + t.getTweetText());
+            	//sb.append("Tweet:" + t.getTweetText() + "\n");
+            	//if(pl != null)
+            	//{
+            		//System.out.println("Landmark:" + pl.getName());
+            		//sb.append("Landmark:" + pl.getName()+ "\n");
+            	//}
+            	//else
+            	//{
+            		//System.out.println("Landmark:Not Found");
+            		//sb.append("Landmark:not found \n");
+            	//}
+            	br = new BufferedReader(new FileReader("json/tweet_19.json"));
+            	Thread.sleep(60000);
+            	jedis.publish("tweet2location", br.readLine());
+            	
+            	
+            	br.close();
+            	//Thread.sleep(10000);
+            	
+            	
+            //}
+        	//String filename = "json/tweet_rsult.txt";
+			//out = new PrintWriter(filename);
+			//out.println(sb.toString());
+			//out.close();
+    	
+            //System.out.print(sb.toString());
+       
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           
+        }
+   
+       
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		*/
+		
+		
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/*
 		Demo dm = new Demo();
 		List<FiguredOutTweet> fot = dm.FigureThemOut();
+		List<VisualizationHelper> vhList = dm.GenerateJsonForVisualization(fot);
+		List<VisualizeBulk> vb = new ArrayList<VisualizeBulk>();
 		
-		//List<LandmarksJson> lsj = new ArrayList<LandmarksJson>();
 		
-		dm.GenerateJSON(fot);
+		for(VisualizationHelper vh : vhList)
+		{
+			List<String> userData = new ArrayList<String>();
+			List<GeoName> gnList = vh.getGeoNames();
+			
+			for(GeoName gn : gnList)
+			{
+				String country = gn.getPrimaryCountryName();
+				String cLong = Double.toString(gn.longitude);
+				String cLat = Double.toString(gn.latitude);
+				int count = vh.getCountCountries().get(country.toUpperCase());
+				
+				userData.add(country  + "," + cLong + "," + cLat + "," + count);
+			}
+			vb.add(new VisualizeBulk(vh.getPopularLandmark().getName(), 
+						vh.getTweets().size(), vh.getPopularLandmark().getLongitude(), 
+						vh.getPopularLandmark().getLatitude(), userData));
+		}
 		
-		System.out.print("Done!");
+			Gson gs = new Gson();
+		
+			String json = gs.toJson(vb);
+			
+			PrintWriter out;
+			try {
+				String filename = "json/BULKTWEET.json";
+				out = new PrintWriter(filename);
+				out.println(json);
+				out.close();
+				
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		
+		///////////////////////////////////////////////////
+		//System.out.print(json);
+		
+		/*
+		List<LandmarksJson> lsj = new ArrayList<LandmarksJson>();
+		
+		String[] alpha = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+		Multimap<String, PopularLandmarks> allOfThem = PopularLandmarks.CreateLandmarks();
+		
+		char f = 65;
+		
+		Collection<PopularLandmarks> col;
+		
+		for(int i=0;i < alpha.length;i++)
+		{
+			col = allOfThem.get(alpha[i]);
+			
+			for(PopularLandmarks p : col)
+			{
+				//lsj.add(new LandmarksJson(p.getName(), p.getLongitude(), p.getLatitude()));
+				
+				System.out.println(p.getName() + ",");
+			}
+		}
+		
+		*/
+		//Gson gs = new Gson();
+		
+		//String json = gs.toJson(lsj);
+		
+		//System.out.print(json);
+		
+		//for(LandmarksJson l: lsj)
+			
+		
+		//dm.GenerateJSON(fot);
+		
+		//System.out.print("Done!");
 		
 		
 		
@@ -243,7 +315,8 @@ public class Demo {
 		//dm.GenerateJsonForVisualization(fot);
 		
 		
-		
+		QGramDistance q = new QGramDistance();
+		System.out.print(q.getSimilarity("niagra falls", "niagara falls", 2));
 			
 	}
 

@@ -15,7 +15,6 @@ import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.process.Tokenizer;
-import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
 import gazetteer.PopularLandmarks;
@@ -80,6 +79,8 @@ public class ParseATweet implements TweetParser{
 		return cleanTweet.toString();
 	}
 	
+	
+	
 	private List<TweetNLP> TagTheTweet(String fullTweet)
 	{
 		//Remove tweet usernames
@@ -92,10 +93,11 @@ public class ParseATweet implements TweetParser{
 		List<? extends HasWord> sentence2 = toke.tokenize();
 		
 	    Tree parse = lp.parse(sentence2);
-	      
+	    System.out.println("Tagging the tokens from the tweet \n\n");
 	    for(TaggedWord tw: parse.taggedYield())
 	    {
 	    	taggedTweet.add(new TweetNLP(tw.word(), tw.tag()));
+	    	System.out.println("Token: " + tw.word() + "- Tag:" + tw.tag());
 	    }
 	    //displayTaggedTweets();
 	    return taggedTweet;
@@ -164,6 +166,12 @@ public class ParseATweet implements TweetParser{
 				}
 			}
 		}
+		
+		System.out.println("\n\n Generating candidates for matching with Landmark gazetteer... \n\n ");
+		for(String candidate : candidates)
+		{
+			System.out.println(candidate);
+		}
 		return candidates;
 	}
 	
@@ -222,7 +230,10 @@ public class ParseATweet implements TweetParser{
 				}
 				
 				if(maxScore >= 0.75)
+				{
+					System.out.println("\n\nMatched Landmark : " + matchedLandmark.getName() + " Score: " + maxScore);
 					return matchedLandmark;
+				}
 			}
 			
 			//if its  hashtag and matches a landmark return the landmark. Higher priority than the landmark in normal text
@@ -250,7 +261,10 @@ public class ParseATweet implements TweetParser{
 					}
 					
 					if(maxScore >= 0.75)
+					{
+						System.out.println("\n\nMatched Landmark : " + matchedLandmark.getName() + " Score: " + maxScore);
 						return matchedLandmark;
+					}
 				}
 			}
 			
@@ -274,7 +288,10 @@ public class ParseATweet implements TweetParser{
 		}
 		
 		if(maxScore >= 0.75)
+		{
+			System.out.println("\n\nMatched Landmark : " + matchedLandmark.getName() + " Score: " + maxScore);
 			return matchedLandmark;
+		}
 		
 		return null;
 	}

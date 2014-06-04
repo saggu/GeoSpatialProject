@@ -12,6 +12,9 @@ public class VisualizationJSON {
 	String landmarkLatitude;
 	
 	
+	
+	
+
 	public String getTweetText() {
 		return tweetText;
 	}
@@ -74,6 +77,7 @@ public class VisualizationJSON {
 		this.landmarkName = landmarkName;
 		this.landmarkLongitute = landmarkLongitute;
 		this.landmarkLatitude = landmarkLatitude;
+		
 	}
 	
 
